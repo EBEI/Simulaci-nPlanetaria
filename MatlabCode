@@ -1,0 +1,29 @@
+clc
+clear all
+G=6.67e-11; % Cte. Grav.
+MSa=10;% Mass of Satellite (kg)
+MT=5.97e24; % Mass of Earth
+f=@(t,W) gravitation(t,W,G,MT,MSa) %Function of the gravitation equation.
+vSa0=[0;5e3];rSa0=[2000e3+6356e3;0];  % Initial Position and Velocities of Satellite
+vT0=[0;0];rT0=[0;0];  % Initial Position and Velocities of Earth
+W0=[rT0;rSa0;vT0;vSa0]; % Array with initial conditions
+tmax=60*24*60*60; % Maximum time of the simulation
+[tt,WW]=odeRK4(f,0,tmax,W0,100000) ; % Method to resolve the differential equation, see documentation of odeRK4
+rT=WW(1:2,:); % Solution for Earth
+rSa=WW(3:4,:);% Solution for Satellite
+for i=1:100:100000 % Loop for plot the simulation
+plot(rSa(1,i),rSa(2,i),'ro',rT(1,i),rT(2,i),'bo')
+hold on
+plot(rSa(1,1:i),rSa(2,1:i),'r',rT(1,1:i),rT(2,1:i),'b')
+hold off
+shg
+end
+% Function whose parameters are gravitation constant G, the mass of the Earth MT, the mass of the Satellite MSa 
+% and the variable of time t and initial condition W. All this parameters must be in International Units. This function
+% return an array with the values of the aceleration and velocities of Earth and the satellite. 
+function g2=gravitation(t,W,G,MT,MSa) 
+rT=W(1:2);rSa=W(3:4);vT=W(5:6);vSa=W(7:8);
+a1=G*MSa/norm(rSa-rT)^3*(rSa-rT);
+a2=G*MT/norm(rT-rSa)^3*(rT-rSa);
+g2=[vT;vSa;a1;a2];
+end
